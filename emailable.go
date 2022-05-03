@@ -180,6 +180,16 @@ const (
 	CardError                SimulateValue = "card_error"
 )
 
+type EmailState string
+
+const (
+	ValidEmail   EmailState = "valid"
+	InvalidEmail EmailState = "invalid"
+	RiskyEmail   EmailState = "risky"
+	BouncedEmail EmailState = "bounced"
+	UnknownEmail EmailState = "unknown"
+)
+
 type BatchRequest struct {
 	Emails   []string      `json:"emails"`  // A comma separated list of emails.
 	Url      string        `json:"url"`     // A URL that will receive the batch results via HTTP POST.
@@ -241,23 +251,23 @@ type VerifyRequest struct {
 }
 
 type VerifyResponse struct {
-	AcceptAll    bool    `json:"accept_all"`    // Whether the mail server used to verify indicates that all addresses are deliverable regardless of whether or not the email is valid.
-	DidYouMean   string  `json:"did_you_mean"`  // A suggested correction for a common misspelling.
-	Disposable   bool    `json:"disposable"`    // Whether this email is hosted on a disposable or temporary email service.
-	Domain       string  `json:"domain"`        // The domain of the email.
-	Duration     float64 `json:"duration"`      // The length of time (in seconds) spent verifying this email.
-	Email        string  `json:"email"`         // The email that was verified.
-	FirstName    string  `json:"first_name"`    // The possible first name of the user.
-	Free         bool    `json:"free"`          // Whether the email is hosted by a free email provider.
-	FullName     string  `json:"full_name"`     // The possible full name of the user.
-	Gender       string  `json:"gender"`        // The possible gender of the user.
-	LastName     string  `json:"last_name"`     // The possible last name of the user.
-	MxRecord     string  `json:"mx_record"`     // The address of the mail server used to verify the email.
-	Reason       string  `json:"reason"`        // The reason for the associated state.
-	Role         bool    `json:"role"`          // Whether the email is considered a role address.
-	Score        int32   `json:"score"`         // The score of the verified email.
-	SmtpProvider string  `json:"smtp_provider"` // The SMTP provider of the verified email's domain.
-	State        string  `json:"state"`         // The state of the verified email
-	Tag          string  `json:"tag"`           // The tag part of the verified email.
-	User         string  `json:"user"`          // The user part of the verified email.
+	AcceptAll    bool       `json:"accept_all"`    // Whether the mail server used to verify indicates that all addresses are deliverable regardless of whether or not the email is valid.
+	DidYouMean   string     `json:"did_you_mean"`  // A suggested correction for a common misspelling.
+	Disposable   bool       `json:"disposable"`    // Whether this email is hosted on a disposable or temporary email service.
+	Domain       string     `json:"domain"`        // The domain of the email.
+	Duration     float64    `json:"duration"`      // The length of time (in seconds) spent verifying this email.
+	Email        string     `json:"email"`         // The email that was verified.
+	FirstName    string     `json:"first_name"`    // The possible first name of the user.
+	Free         bool       `json:"free"`          // Whether the email is hosted by a free email provider.
+	FullName     string     `json:"full_name"`     // The possible full name of the user.
+	Gender       string     `json:"gender"`        // The possible gender of the user.
+	LastName     string     `json:"last_name"`     // The possible last name of the user.
+	MxRecord     string     `json:"mx_record"`     // The address of the mail server used to verify the email.
+	Reason       string     `json:"reason"`        // The reason for the associated state.
+	Role         bool       `json:"role"`          // Whether the email is considered a role address.
+	Score        int32      `json:"score"`         // The score of the verified email.
+	SmtpProvider string     `json:"smtp_provider"` // The SMTP provider of the verified email's domain.
+	State        EmailState `json:"state"`         // The state of the verified email
+	Tag          string     `json:"tag"`           // The tag part of the verified email.
+	User         string     `json:"user"`          // The user part of the verified email.
 }
