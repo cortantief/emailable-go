@@ -52,7 +52,7 @@ func (emailable *Emailable) Verify(req VerifyRequest) (*VerifyResponse, error) {
 	if hresp.StatusCode == 249 {
 		return nil, errors.New("your request is taking longer than normal. please send your request again")
 	} else if hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("invalid status code: %v", hresp.StatusCode)
+		return nil, nil
 	}
 	err = json.NewDecoder(hresp.Body).Decode(&vresp)
 	if err != nil {
@@ -73,9 +73,8 @@ func (emailable *Emailable) BatchVerify(req BatchRequest) (*BatchResponse, error
 	resp, err := http.Post(fmt.Sprintf("%s/batch", base_url), "application/json", bytes.NewReader(value))
 	if err != nil {
 		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("invalid status code: %v", resp.StatusCode)
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, nil
 	}
 	err = json.NewDecoder(resp.Body).Decode(&batch)
 	if err != nil {
@@ -126,49 +125,21 @@ func (emailable *Emailable) BatchStatus(req *BatchStatusRequest) (*BatchStatusRe
 	if req.Partial != "" {
 		querys.Add("partial", req.Partial)
 	}
-	if req.Smiluate != "" {
-		querys.Add("simulate", req.Smiluate)
+	if req.Simulate != "" {
+		querys.Add("simulate", req.Simulate)
 	}
 	url.RawQuery = querys.Encode()
 	hresp, err := http.Get(url.String())
 	if err != nil {
 		return nil, err
+	} else if hresp.StatusCode != http.StatusOK {
+		return nil, nil
 	}
 	err = json.NewDecoder(hresp.Body).Decode(&resp)
 	if err != nil {
 		return nil, err
 	}
 	return &resp, nil
-}
-
-type VerifyRequest struct {
-	Email     string `json:"email"`      // The email you want verified.
-	Smtp      bool   `json:"smtp"`       // "true" or "false". The SMTP step takes up a majority of the API's response time. If you would like to speed up your response times, you can disable this step. Default: true
-	AcceptAll bool   `json:"accept_all"` // "true" or "false". Whether or not an accept-all check is performed. Heavily impacts API's response time. Default: false
-	Timeout   uint8  `json:"timeout"`    // Optional timeout to wait for response (in seconds). Min: 5, Max: 30. Default: 5
-	ApiKey    string `json:"api_key"`
-}
-
-type VerifyResponse struct {
-	AcceptAll    bool    `json:"accept_all"`    // Whether the mail server used to verify indicates that all addresses are deliverable regardless of whether or not the email is valid.
-	DidYouMean   string  `json:"did_you_mean"`  // A suggested correction for a common misspelling.
-	Disposable   bool    `json:"disposable"`    // Whether this email is hosted on a disposable or temporary email service.
-	Domain       string  `json:"domain"`        // The domain of the email.
-	Duration     float64 `json:"duration"`      // The length of time (in seconds) spent verifying this email.
-	Email        string  `json:"email"`         // The email that was verified.
-	FirstName    string  `json:"first_name"`    // The possible first name of the user.
-	Free         bool    `json:"free"`          // Whether the email is hosted by a free email provider.
-	FullName     string  `json:"full_name"`     // The possible full name of the user.
-	Gender       string  `json:"gender"`        // The possible gender of the user.
-	LastName     string  `json:"last_name"`     // The possible last name of the user.
-	MxRecord     string  `json:"mx_record"`     // The address of the mail server used to verify the email.
-	Reason       string  `json:"reason"`        // The reason for the associated state.
-	Role         bool    `json:"role"`          // Whether the email is considered a role address.
-	Score        int32   `json:"score"`         // The score of the verified email.
-	SmtpProvider string  `json:"smtp_provider"` // The SMTP provider of the verified email's domain.
-	State        string  `json:"state"`         // The state of the verified email
-	Tag          string  `json:"tag"`           // The tag part of the verified email.
-	User         string  `json:"user"`          // The user part of the verified email.
 }
 
 func (emailable *Emailable) NewVerifyReq(email string) VerifyRequest {
@@ -196,7 +167,7 @@ func (emailable *Emailable) NewBatchVerificationReq(id string) BatchStatusReques
 		Id:       id,
 		ApiKey:   emailable.apiKey,
 		Partial:  "",
-		Smiluate: "",
+		Simulate: "",
 	}
 }
 
@@ -226,7 +197,7 @@ type BatchStatusRequest struct {
 	Id       string `json:"id"`
 	ApiKey   string `json:"api_key"`
 	Partial  string `json:"partial"`
-	Smiluate string `json:"simulate"`
+	Simulate string `json:"simulate"`
 }
 
 type ReasonCount struct {
@@ -260,4 +231,33 @@ type BatchStatusResponse struct {
 	Id          string           `json:"id"`
 	ReasonCount ReasonCount      `json:"reason_counts"`
 	TotalCounts TotalCounts      `json:"total_counts"`
+}
+type VerifyRequest struct {
+	Email     string `json:"email"`      // The email you want verified.
+	Smtp      bool   `json:"smtp"`       // "true" or "false". The SMTP step takes up a majority of the API's response time. If you would like to speed up your response times, you can disable this step. Default: true
+	AcceptAll bool   `json:"accept_all"` // "true" or "false". Whether or not an accept-all check is performed. Heavily impacts API's response time. Default: false
+	Timeout   uint8  `json:"timeout"`    // Optional timeout to wait for response (in seconds). Min: 5, Max: 30. Default: 5
+	ApiKey    string `json:"api_key"`
+}
+
+type VerifyResponse struct {
+	AcceptAll    bool    `json:"accept_all"`    // Whether the mail server used to verify indicates that all addresses are deliverable regardless of whether or not the email is valid.
+	DidYouMean   string  `json:"did_you_mean"`  // A suggested correction for a common misspelling.
+	Disposable   bool    `json:"disposable"`    // Whether this email is hosted on a disposable or temporary email service.
+	Domain       string  `json:"domain"`        // The domain of the email.
+	Duration     float64 `json:"duration"`      // The length of time (in seconds) spent verifying this email.
+	Email        string  `json:"email"`         // The email that was verified.
+	FirstName    string  `json:"first_name"`    // The possible first name of the user.
+	Free         bool    `json:"free"`          // Whether the email is hosted by a free email provider.
+	FullName     string  `json:"full_name"`     // The possible full name of the user.
+	Gender       string  `json:"gender"`        // The possible gender of the user.
+	LastName     string  `json:"last_name"`     // The possible last name of the user.
+	MxRecord     string  `json:"mx_record"`     // The address of the mail server used to verify the email.
+	Reason       string  `json:"reason"`        // The reason for the associated state.
+	Role         bool    `json:"role"`          // Whether the email is considered a role address.
+	Score        int32   `json:"score"`         // The score of the verified email.
+	SmtpProvider string  `json:"smtp_provider"` // The SMTP provider of the verified email's domain.
+	State        string  `json:"state"`         // The state of the verified email
+	Tag          string  `json:"tag"`           // The tag part of the verified email.
+	User         string  `json:"user"`          // The user part of the verified email.
 }
